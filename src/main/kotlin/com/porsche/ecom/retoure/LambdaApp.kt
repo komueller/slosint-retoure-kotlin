@@ -2,29 +2,23 @@ package com.porsche.ecom.retoure
 
 import com.amazonaws.services.lambda.runtime.Context
 import com.amazonaws.services.lambda.runtime.RequestStreamHandler
-import com.porsche.ecom.retoure.aws.AwsSns
+import com.porsche.ecom.retoure.aws.impl.*
 import com.porsche.ecom.retoure.models.RetoureModel
 import com.porsche.ecom.retoure.services.ExcelToModelConverter
-import com.porsche.ecom.retoure.services.JsonParserService
+import com.porsche.ecom.retoure.services.impl.*
 import com.porsche.ecom.retoure.services.MailService
 import com.porsche.ecom.retoure.services.ModelToXmlConverter
-import org.springframework.context.support.ClassPathXmlApplicationContext
 import java.io.InputStream
 import java.io.OutputStream
 import java.nio.charset.StandardCharsets
 
 class LambdaApp : RequestStreamHandler {
 
-    companion object {
-        private val appContext: ClassPathXmlApplicationContext =
-            ClassPathXmlApplicationContext("applicationContext.xml")
-    }
-
     override fun handleRequest(input: InputStream, output: OutputStream, context: Context) {
         println("Starting program")
 
         try {
-            val messageId: String = appContext.getBean(JsonParserService::class.java).parseMessageIdFrom(input)
+            val messageId: String = JsonParserServiceImpl().parseMessageIdFrom(input)
             startConvert(messageId)
         } catch (e: Exception) {
             val error = "The following error occurred: ${e.message}"
@@ -41,12 +35,12 @@ class LambdaApp : RequestStreamHandler {
     }
 
     fun startConvert(messageId: String) {
-        val file: InputStream = appContext.getBean(MailService::class.java).getFirstAttachmentFromS3Mail(messageId)
+        val file: InputStream = MailServiceImpl(AwsS3Impl()).getFirstAttachmentFromS3Mail(messageId)
         val retoureModels: MutableList<RetoureModel> =
-            appContext.getBean(ExcelToModelConverter::class.java).convert(file)
+            ExcelToModelConverterImpl(CellFormatterImpl(), ColumnInitializer()).convert(file)
 
-        val awsSns = appContext.getBean(AwsSns::class.java)
-        val xml: MutableList<String> = appContext.getBean(ModelToXmlConverter::class.java).convert(retoureModels)
+        val awsSns = AwsSnsImpl()
+        val xml: MutableList<String> = ModelToXmlConverterImpl().convert(retoureModels)
         println("Finished generating xml")
         xml.forEach { awsSns.publish(it) }
     }

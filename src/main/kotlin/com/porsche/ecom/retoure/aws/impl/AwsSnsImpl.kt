@@ -1,8 +1,6 @@
 package com.porsche.ecom.retoure.aws.impl
 
 import com.porsche.ecom.retoure.aws.AwsSns
-import org.springframework.core.env.Environment
-import org.springframework.stereotype.Component
 import software.amazon.awssdk.core.exception.SdkClientException
 import software.amazon.awssdk.regions.Region
 import software.amazon.awssdk.regions.internal.util.EC2MetadataUtils
@@ -11,8 +9,7 @@ import software.amazon.awssdk.services.sns.model.PublishRequest
 import software.amazon.awssdk.services.sns.model.PublishResponse
 import software.amazon.awssdk.services.sns.model.SnsException
 
-@Component
-class AwsSnsImpl(private val environment: Environment) : AwsSns {
+class AwsSnsImpl(private val environment: MutableMap<String, String> = System.getenv()) : AwsSns {
 
     private val region: Region = try {
         Region.of(EC2MetadataUtils.getEC2InstanceRegion())
@@ -43,7 +40,7 @@ class AwsSnsImpl(private val environment: Environment) : AwsSns {
     private fun publishMessage(message: String) {
         getSnsClient().use {
             val result: PublishResponse =
-                it.publish(PublishRequest.builder().topicArn(environment.getProperty(SNS_TOPIC_ENV_VAR)).message(message).build())
+                it.publish(PublishRequest.builder().topicArn(environment[SNS_TOPIC_ENV_VAR]).message(message).build())
 
             println("Successfully published to SNS with messageId '${result.messageId()}' and message '$message'")
         }

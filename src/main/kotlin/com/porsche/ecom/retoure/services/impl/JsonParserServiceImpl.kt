@@ -2,10 +2,8 @@ package com.porsche.ecom.retoure.services.impl
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.porsche.ecom.retoure.services.JsonParserService
-import org.springframework.stereotype.Component
 import java.io.InputStream
 
-@Component
 class JsonParserServiceImpl : JsonParserService {
     override fun parseMessageIdFrom(sesEvent: InputStream): String {
         println("Parsing JSON from InputStream SES event")

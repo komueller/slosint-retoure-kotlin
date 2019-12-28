@@ -6,12 +6,10 @@ import com.porsche.ecom.retoure.services.CellFormatter
 import com.porsche.ecom.retoure.services.ExcelToModelConverter
 import org.apache.poi.hssf.usermodel.HSSFWorkbook
 import org.apache.poi.ss.usermodel.Row
-import org.springframework.stereotype.Component
 import java.io.InputStream
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
-@Component
 class ExcelToModelConverterImpl(
     private val cellFormatter: CellFormatter,
     private val columnInitializer: ColumnInitializer

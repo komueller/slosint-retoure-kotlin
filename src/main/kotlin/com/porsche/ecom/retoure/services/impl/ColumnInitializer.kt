@@ -3,9 +3,7 @@ package com.porsche.ecom.retoure.services.impl
 import com.porsche.ecom.retoure.services.CellFormatter
 import org.apache.poi.ss.usermodel.Cell
 import org.apache.poi.ss.usermodel.Row
-import org.springframework.stereotype.Component
 
-@Component
 class ColumnInitializer {
 
     private lateinit var columns: Map<String, Int>

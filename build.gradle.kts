@@ -6,7 +6,6 @@
 
 plugins {
     kotlin("jvm") version "1.3.61"
-//    kotlin("plugin.spring") version "1.3.61"
 //    id("io.gitlab.arturbosch.detekt") version "1.2.2"
 }
 
@@ -28,7 +27,6 @@ dependencies {
     implementation("software.amazon.awssdk:s3")
     implementation("org.apache.poi:poi:4.1.1")
     implementation("com.sun.mail:javax.mail:1.6.2")
-    implementation("org.springframework:spring-context-support:5.2.2.RELEASE")
     implementation("com.fasterxml.jackson.core:jackson-databind:2.10.1")
 
     testImplementation("org.mockito:mockito-all:2.0.2-beta")

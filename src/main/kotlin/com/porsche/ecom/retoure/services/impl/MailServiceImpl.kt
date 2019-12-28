@@ -4,7 +4,6 @@ import com.porsche.ecom.retoure.aws.AwsS3
 import com.porsche.ecom.retoure.infrastructure.MailAttachmentNotFoundException
 import com.porsche.ecom.retoure.infrastructure.TooManyMailAttachmentsException
 import com.porsche.ecom.retoure.services.MailService
-import org.springframework.stereotype.Component
 import software.amazon.awssdk.utils.StringUtils
 import java.io.ByteArrayInputStream
 import java.io.FileNotFoundException
@@ -15,7 +14,6 @@ import javax.mail.Part
 import javax.mail.Session
 import javax.mail.internet.MimeMessage
 
-@Component
 class MailServiceImpl(private val awsS3: AwsS3) : MailService {
 
     companion object {

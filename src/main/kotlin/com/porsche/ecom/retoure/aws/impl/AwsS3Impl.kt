@@ -1,8 +1,6 @@
 package com.porsche.ecom.retoure.aws.impl
 
 import com.porsche.ecom.retoure.aws.AwsS3
-import org.springframework.core.env.Environment
-import org.springframework.stereotype.Component
 import software.amazon.awssdk.core.exception.SdkClientException
 import software.amazon.awssdk.regions.Region
 import software.amazon.awssdk.regions.internal.util.EC2MetadataUtils
@@ -11,8 +9,7 @@ import software.amazon.awssdk.services.s3.model.GetObjectRequest
 import software.amazon.awssdk.services.s3.model.S3Exception
 
 /** Wrapper for AWS S3 classes. */
-@Component
-class AwsS3Impl(private val environment: Environment) : AwsS3 {
+class AwsS3Impl(private val environment: MutableMap<String, String> = System.getenv()) : AwsS3 {
 
     private val region: Region = try {
         Region.of(EC2MetadataUtils.getEC2InstanceRegion())
@@ -34,7 +31,7 @@ class AwsS3Impl(private val environment: Environment) : AwsS3 {
         try {
             getS3Client().use {
                 return it.getObjectAsBytes(
-                    GetObjectRequest.builder().bucket(environment.getProperty(BUCKETNAME_ENV_VAR)).key(filename).build()
+                    GetObjectRequest.builder().bucket(environment[BUCKETNAME_ENV_VAR]).key(filename).build()
                 ).asByteArray() ?: byteArrayOf()
             }
         } catch (e: S3Exception) {
