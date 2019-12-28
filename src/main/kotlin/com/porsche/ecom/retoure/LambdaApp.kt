@@ -2,12 +2,10 @@ package com.porsche.ecom.retoure
 
 import com.amazonaws.services.lambda.runtime.Context
 import com.amazonaws.services.lambda.runtime.RequestStreamHandler
-import com.porsche.ecom.retoure.aws.impl.*
+import com.porsche.ecom.retoure.aws.impl.AwsS3Impl
+import com.porsche.ecom.retoure.aws.impl.AwsSnsImpl
 import com.porsche.ecom.retoure.models.RetoureModel
-import com.porsche.ecom.retoure.services.ExcelToModelConverter
 import com.porsche.ecom.retoure.services.impl.*
-import com.porsche.ecom.retoure.services.MailService
-import com.porsche.ecom.retoure.services.ModelToXmlConverter
 import java.io.InputStream
 import java.io.OutputStream
 import java.nio.charset.StandardCharsets
