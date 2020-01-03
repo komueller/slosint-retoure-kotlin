@@ -59,23 +59,31 @@ class ModelToXmlConverterImpl : ModelToXmlConverter {
     fun convertModelToXml(model: RetoureModel): String {
         val document = DocumentBuilderFactory.newInstance().newDocumentBuilder().newDocument()
 
-        val root: Element = document.createXmlElement(RETURNS)
+        val root: Element = Xml(document, RETURNS).element
         document.appendChild(root)
 
-        val returnNumber: Element =
-            document.createXmlElement(RETURN, root, attributeName = NUMBER, attributeValue = model.returnNumber)
+        val returnNumber: Element = Xml(document, RETURN).run {
+            parent(root)
+            attribute(NUMBER to model.returnNumber)
+        }
 
-        document.createXmlElement(DATE, returnNumber, dateToString(model.date), "format", "YYYY-MM-DD")
-        document.createXmlElement(CHANNEL, returnNumber, "B2C")
+        Xml(document, DATE).run {
+            parent(returnNumber)
+            text(dateToString(model.date))
+            attribute("format" to "YYYY-MM-DD")
+        }
 
-        val consignmentNumber: Element = document.createXmlElement(
-            CONSIGNMENT,
-            returnNumber,
-            attributeName = NUMBER,
-            attributeValue = model.consignmentNumber.toString()
-        )
+        Xml(document, CHANNEL).run {
+            parent(returnNumber)
+            text("B2C")
+        }
 
-        val products: Element = document.createXmlElement(PRODUCTS, consignmentNumber)
+        val consignmentNumber: Element = Xml(document, CONSIGNMENT).run {
+            parent(returnNumber)
+            attribute(NUMBER to model.consignmentNumber.toString())
+        }
+
+        val products: Element = Xml(document, PRODUCTS).run { parent(consignmentNumber) }
         addProductsXmlTo(products, document, model.products.values)
 
         val xml: String = convertDocumentToString(document)
@@ -96,23 +104,43 @@ class ModelToXmlConverterImpl : ModelToXmlConverter {
         products: Collection<ProductModel>
     ) {
         for (product in products) {
-            val productEle: Element = document.createXmlElement(
-                PRODUCT,
-                parent,
-                attributeName = NUMBER,
-                attributeValue = product.productNumber
-            )
+            val productEle: Element = Xml(document, PRODUCT).run {
+                parent(parent)
+                attribute(NUMBER to product.productNumber)
+            }
 
-            document.createXmlElement(POSITION, productEle, product.position.toString())
+            Xml(document, POSITION).run {
+                parent(productEle)
+                text(product.position.toString())
+            }
 
-            val amount: Element = document.createXmlElement(AMOUNT, productEle)
-            val valid: Element = document.createXmlElement(VALID, amount)
+            val amount: Element = Xml(document, AMOUNT).run { parent(productEle) }
+            val valid: Element = Xml(document, VALID).run { parent(amount) }
 
-            document.createXmlElement(RESTOCK, valid, product.amountValidRestock.toString())
-            document.createXmlElement(SCRAP, valid, ZERO)
-            document.createXmlElement(INVALID, amount, ZERO)
-            document.createXmlElement(INTERNAL, amount, ZERO)
-            document.createXmlElement(REASON, productEle, reasonToString(product))
+            Xml(document, RESTOCK).run {
+                parent(valid)
+                text(product.amountValidRestock.toString())
+            }
+
+            Xml(document, SCRAP).run {
+                parent(valid)
+                text(ZERO)
+            }
+
+            Xml(document, INVALID).run {
+                parent(amount)
+                text(ZERO)
+            }
+
+            Xml(document, INTERNAL).run {
+                parent(amount)
+                text(ZERO)
+            }
+
+            Xml(document, REASON).run {
+                parent(productEle)
+                text(reasonToString(product))
+            }
         }
     }
 
@@ -145,25 +173,24 @@ class ModelToXmlConverterImpl : ModelToXmlConverter {
      * @return the reason with zero firstly in String format
      */
     private fun reasonToString(productModel: ProductModel): String = String.format("%02d", productModel.reason)
+}
 
-    private fun Document.createXmlElement(
-        tagName: String,
-        parent: Element? = null,
-        textContent: String? = null,
-        attributeName: String? = null,
-        attributeValue: String? = null
-    ): Element {
-        val element: Element = createElement(tagName)
+data class Xml(val document: Document, val tagName: String) {
 
-        if (attributeName != null && attributeValue != null) {
-            element.setAttribute(attributeName, attributeValue)
-        }
+    val element: Element = document.createElement(tagName)
 
-        if (textContent != null) {
-            element.appendChild(createTextNode(textContent))
-        }
+    fun attribute(attr: Pair<String, String>): Element {
+        element.setAttribute(attr.first, attr.second)
+        return element
+    }
 
-        parent?.appendChild(element)
+    fun text(textContent: String): Element {
+        element.appendChild(document.createTextNode(textContent))
+        return element
+    }
+
+    fun parent(parentElement: Element): Element {
+        parentElement.appendChild(element)
         return element
     }
 }
